@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WorkPay</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Padauk:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Padauk', 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            background-color: #f3f4f6;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+        .calendar-day {
+            min-height: 46px;
+        }
+        .app-gradient {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex justify-center">
+
+    <!-- Main Container -->
+    <div class="w-full max-w-md bg-white min-h-screen shadow-xl flex flex-col relative pb-12">
+
+        <!-- Header -->
+        <header class="app-gradient text-white px-4 py-3 shadow-md sticky top-0 z-20 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/30">
+                    <i class="fa-solid fa-handshake-simple text-white text-base"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-wide">WorkPay</h1>
+            </div>
+
+            <!-- Profile & Login Badge -->
+            <div class="flex items-center space-x-2">
+                <button onclick="openProfileModal()" class="bg-white/20 hover:bg-white/30 text-white text-[11px] font-semibold px-2.5 py-1 rounded-md border border-white/30 transition flex items-center gap-1">
+                    <i class="fa-solid fa-user-circle text-xs"></i>
+                    <span id="headerUserName">Login / Profile</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Scrollable Main Content -->
+        <main class="flex-1 p-3 space-y-3 overflow-y-auto">
+
+            <!-- Month Navigator & Cycle Options Card -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 shadow-sm space-y-2">
+                <div class="flex items-center justify-between text-blue-600 font-bold">
+                    <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-blue-50 active:scale-95 transition text-blue-600">
+                        <i class="fa-solid fa-chevron-left text-sm"></i>
+                    </button>
+                    <div class="text-center">
+                        <div id="monthDisplayTitle" class="text-sm font-extrabold text-blue-700">Jul 26 - Aug End, 2026</div>
+                        <div id="monthSubTitle" class="text-[10px] text-slate-400 font-normal">(ရက်စွဲ ပြောင်းရန် နှိပ်ပါ)</div>
+                    </div>
+                    <button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-blue-50 active:scale-95 transition text-blue-600">
+                        <i class="fa-solid fa-chevron-right text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Cycle Type Selector Dropdown -->
+                <div class="flex flex-col gap-1 pt-1.5 border-t border-slate-200 text-xs">
+                    <span class="text-slate-500 font-semibold text-[11px]">ရက်စွဲ စက်ဝန်း ပုံစံ:</span>
+                    <select id="cycleTypeSelect" onchange="changeCycleMode(this.value)" class="w-full bg-white border border-slate-300 text-slate-700 font-bold py-1.5 px-2 rounded-md focus:outline-none focus:border-orange-500 text-[11px] shadow-sm">
+                        <option value="26-next-end" selected>26 ရက် မှ နောက်လကုန်ထိ (Jul 26 - Aug End)</option>
+                        <option value="26-25">26 ရက် မှ 25 ရက်ထိ (Jul 26 - Aug 25)</option>
+                        <option value="26-cur-end">26 ရက် မှ ဒီလကုန်ထိ (Jul 26 - Jul End)</option>
+                        <option value="1-end">1 ရက် မှ လကုန်ထိ (Jul 01 - Jul End)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Calendar Section -->
+            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <div class="calendar-grid bg-slate-700 text-white text-center font-bold text-[10px] py-2">
+                    <div class="text-red-400">SUN</div>
+                    <div>MON</div>
+                    <div>TUE</div>
+                    <div>WED</div>
+                    <div>THU</div>
+                    <div>FRI</div>
+                    <div>SAT</div>
+                </div>
+
+                <div id="calendarGrid" class="calendar-grid border-t border-slate-200">
+                    <!-- Calendar Days Rendered Here -->
+                </div>
+            </div>
+
+            <!-- Pay Calculations Table -->
+            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm text-xs">
+                <div class="bg-slate-800 text-white px-3 py-2 font-bold flex justify-between items-center text-xs">
+                    <span>လစာတွက်ချက်မှု အနှစ်ချုပ်</span>
+                    <span class="text-[10px] font-normal text-slate-300">BHD</span>
+                </div>
+                
+                <div class="divide-y divide-slate-100">
+                    <!-- Daily Rate -->
+                    <div class="flex justify-between items-center p-2.5 hover:bg-slate-50">
+                        <span class="text-slate-600">နေ့စဉ်ကြေး (Daily) (<span id="dailyDaysCount">0</span> ရက်)</span>
+                        <div class="flex items-center gap-1.5">
+                            <input type="number" id="dailyRateInput" value="400.0" oninput="calculateSalary()" class="w-16 text-right border border-slate-300 rounded px-1 py-0.5 text-xs text-slate-700 focus:outline-none focus:border-orange-500">
+                            <span id="valDailySum" class="font-bold text-slate-800 w-12 text-right">0.0</span>
+                        </div>
+                    </div>
+
+                    <!-- Allowance -->
+                    <div class="flex justify-between items-center p-2.5 hover:bg-slate-50">
+                        <span class="text-slate-600">သက်သာချောင်ချိရေး</span>
+                        <div class="flex items-center gap-1.5">
+                            <input type="number" id="allowanceInput" value="90.0" oninput="calculateSalary()" class="w-16 text-right border border-slate-300 rounded px-1 py-0.5 text-xs text-slate-700 focus:outline-none focus:border-orange-500">
+                            <span id="valAllowanceSum" class="font-bold text-slate-800 w-12 text-right">0.0</span>
+                        </div>
+                    </div>
+
+                    <!-- OT -->
+                    <div class="flex justify-between items-center p-2.5 hover:bg-slate-50">
+                        <span class="text-slate-600">OT (အချိန်ပိုကြေး) (<span id="otHoursCount">0</span> နာရီ)</span>
+                        <div class="flex items-center gap-1.5">
+                            <input type="number" id="otRateInput" value="75.0" oninput="calculateSalary()" class="w-16 text-right border border-slate-300 rounded px-1 py-0.5 text-xs text-slate-700 focus:outline-none focus:border-orange-500">
+                            <span id="valOTSum" class="font-bold text-slate-800 w-12 text-right">0.0</span>
+                        </div>
+                    </div>
+
+                    <!-- Subtotal -->
+                    <div class="flex justify-between items-center p-2.5 bg-slate-50 font-bold text-slate-900">
+                        <span>စုစုပေါင်း (TOTAL)</span>
+                        <span id="valSubtotal" class="text-sm text-blue-700">0.0</span>
+                    </div>
+
+                    <!-- Social Security -->
+                    <div class="flex justify-between items-center p-2.5 hover:bg-slate-50">
+                        <span class="text-slate-600">လူမှုဖူလုံရေး (4%)</span>
+                        <span id="valSocialSec" class="font-bold text-red-600">0.0</span>
+                    </div>
+
+                    <!-- Travel Allowance -->
+                    <div class="flex justify-between items-center p-2.5 hover:bg-slate-50">
+                        <span class="text-slate-600">ကားခ (<span id="workedDaysCount">0</span> ရက်)</span>
+                        <div class="flex items-center gap-1.5">
+                            <input type="number" id="foodRateInput" value="40.0" oninput="calculateSalary()" class="w-16 text-right border border-slate-300 rounded px-1 py-0.5 text-xs text-slate-700 focus:outline-none focus:border-orange-500">
+                            <span id="valFoodSum" class="font-bold text-slate-800 w-12 text-right">0.0</span>
+                        </div>
+                    </div>
+
+                    <!-- Net Total Amount -->
+                    <div class="flex justify-between items-center p-3 bg-orange-50 text-orange-900 font-extrabold border-t border-orange-200">
+                        <span class="text-xs">ရရှိမည့် စုစုပေါင်းငွေ</span>
+                        <div class="text-right">
+                            <span id="valTotalAmount" class="text-lg text-orange-600">0.0</span>
+                            <span class="text-[10px] font-normal text-slate-500 inline ml-0.5">BHD</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Payslip Action Button -->
+            <button onclick="savePayslip()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 text-xs">
+                <i class="fa-solid fa-file-invoice-dollar text-base"></i>
+                <span>ဒီတစ်လစာ လစာစလစ် သိမ်းမည်</span>
+            </button>
+
+            <!-- Saved Payslips History -->
+            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm space-y-2 text-xs">
+                <div class="font-bold text-slate-800 flex items-center gap-1.5 border-b pb-2">
+                    <i class="fa-solid fa-history text-orange-500"></i>
+                    <span>သိမ်းဆည်းထားသော လစာစလစ်များ</span>
+                </div>
+                <div id="savedPayslipsList" class="space-y-2">
+                    <!-- Saved slips list will appear here -->
+                    <p class="text-slate-400 text-[11px] text-center py-2">သိမ်းထားသော စလစ် မရှိသေးပါ။</p>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- User Profile & Login Modal -->
+        <div id="profileModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-xl max-w-xs w-full p-4 shadow-2xl">
+                <div class="text-center mb-3">
+                    <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">
+                        <i class="fa-solid fa-user-lock"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-800">အသုံးပြုသူ အကောင့်</h3>
+                    <p class="text-[11px] text-slate-500">ဖုန်း သို့မဟုတ် အီးမေးလ်ဖြင့် လော့အင်ဝင်ပါ</p>
+                </div>
+
+                <div class="space-y-2.5 text-xs">
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">အသုံးပြုသူ နာမည် (Name)</label>
+                        <input type="text" id="inputUserName" placeholder="ဥပမာ - မောင်မောင်" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500">
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">ဖုန်း သို့မဟုတ် အီးမေးလ် (Phone/Email)</label>
+                        <input type="text" id="inputUserContact" placeholder="09... သို့မဟုတ် email@gmail.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 mt-4">
+                    <button onclick="closeProfileModal()" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-lg text-xs transition">
+                        ပိတ်မည်
+                    </button>
+                    <button onclick="saveUserProfile()" class="flex-1 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg text-xs shadow transition">
+                        သိမ်းမည်
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day Entry Modal -->
+        <div id="dayModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-xl max-w-xs w-full p-4 shadow-2xl">
+                <div class="text-center mb-3">
+                    <h3 id="modalDateTitle" class="text-base font-bold text-slate-800">2026-07-27</h3>
+                    <p class="text-[11px] text-slate-500">စာရင်း သွင်းရန်</p>
+                </div>
+
+                <div class="space-y-2 text-xs">
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">Daily (ပုံမှန်အလုပ်ချိန် - ရက်)</label>
+                        <input type="number" id="modalDailyHours" step="0.5" min="0" max="24" placeholder="1" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500">
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-600 mb-1">OT (အချိန်ပို - နာရီ)</label>
+                        <input type="number" id="modalOTHours" step="0.5" min="0" max="24" placeholder="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 mt-4">
+                    <button onclick="closeDayModal()" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-lg text-xs transition">
+                        မလုပ်တော့ပါ
+                    </button>
+                    <button onclick="saveDayEntry()" class="flex-1 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg text-xs shadow transition">
+                        သိမ်းမည်
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        let selectedYear = 2026;
+        let selectedMonthIndex = 6; // 0 = Jan, 6 = Jul
+        let cycleMode = '26-next-end'; 
+        let workLogs = {};
+        let savedSlips = [];
+        let userProfile = { name: '', contact: '' };
+        let activeSelectedDateStr = '';
+
+        try {
+            workLogs = JSON.parse(localStorage.getItem('workpay_logs') || '{}');
+            savedSlips = JSON.parse(localStorage.getItem('workpay_slips') || '[]');
+            userProfile = JSON.parse(localStorage.getItem('workpay_user') || '{"name":"","contact":""}');
+        } catch(e) {}
+
+        const monthsNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUserUI();
+            renderCalendar();
+            calculateSalary();
+            renderSavedSlips();
+        });
+
+        // User Profile Functions
+        function openProfileModal() {
+            document.getElementById('inputUserName').value = userProfile.name || '';
+            document.getElementById('inputUserContact').value = userProfile.contact || '';
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        function saveUserProfile() {
+            const name = document.getElementById('inputUserName').value.trim();
+            const contact = document.getElementById('inputUserContact').value.trim();
+
+            if (!name) {
+                alert('အသုံးပြုသူ နာမည် ထည့်ပေးပါ။');
+                return;
+            }
+
+            userProfile = { name, contact };
+            localStorage.setItem('workpay_user', JSON.stringify(userProfile));
+            updateUserUI();
+            closeProfileModal();
+        }
+
+        function updateUserUI() {
+            const btnLabel = document.getElementById('headerUserName');
+            if (userProfile.name) {
+                btnLabel.innerText = userProfile.name;
+            } else {
+                btnLabel.innerText = 'Login / Profile';
+            }
+        }
+
+        function changeCycleMode(mode) {
+            cycleMode = mode;
+            renderCalendar();
+            calculateSalary();
+        }
+
+        function changeMonth(delta) {
+            selectedMonthIndex += delta;
+            if (selectedMonthIndex > 11) {
+                selectedMonthIndex = 0;
+                selectedYear++;
+            } else if (selectedMonthIndex < 0) {
+                selectedMonthIndex = 11;
+                selectedYear--;
+            }
+            renderCalendar();
+            calculateSalary();
+        }
+
+        function getActiveDates() {
+            const datesToDisplay = [];
+            const startMonth = monthsNames[selectedMonthIndex];
+            
+            if (cycleMode === '26-next-end') {
+                const nextMonthIndex = (selectedMonthIndex + 1) % 12;
+                const endMonth = monthsNames[nextMonthIndex];
+                const endYear = nextMonthIndex === 0 ? selectedYear + 1 : selectedYear;
+                document.getElementById('monthDisplayTitle').innerText = `${startMonth} 26 - ${endMonth} End, ${selectedYear}`;
+
+                const daysInStartMonth = new Date(selectedYear, selectedMonthIndex + 1, 0).getDate();
+                for (let d = 26; d <= daysInStartMonth; d++) datesToDisplay.push(new Date(selectedYear, selectedMonthIndex, d));
+                
+                const daysInNextMonth = new Date(endYear, nextMonthIndex + 1, 0).getDate();
+                for (let d = 1; d <= daysInNextMonth; d++) datesToDisplay.push(new Date(endYear, nextMonthIndex, d));
+            } else if (cycleMode === '26-25') {
+                const nextMonthIndex = (selectedMonthIndex + 1) % 12;
+                const endMonth = monthsNames[nextMonthIndex];
+                const endYear = nextMonthIndex === 0 ? selectedYear + 1 : selectedYear;
+                document.getElementById('monthDisplayTitle').innerText = `${startMonth} 26 - ${endMonth} 25, ${selectedYear}`;
+
+                const daysInStartMonth = new Date(selectedYear, selectedMonthIndex + 1, 0).getDate();
+                for (let d = 26; d <= daysInStartMonth; d++) datesToDisplay.push(new Date(selectedYear, selectedMonthIndex, d));
+                for (let d = 1; d <= 25; d++) datesToDisplay.push(new Date(endYear, nextMonthIndex, d));
+            } else if (cycleMode === '26-cur-end') {
+                document.getElementById('monthDisplayTitle').innerText = `${startMonth} 26 - ${startMonth} End, ${selectedYear}`;
+                const daysInStartMonth = new Date(selectedYear, selectedMonthIndex + 1, 0).getDate();
+                for (let d = 26; d <= daysInStartMonth; d++) datesToDisplay.push(new Date(selectedYear, selectedMonthIndex, d));
+            } else if (cycleMode === '1-end') {
+                document.getElementById('monthDisplayTitle').innerText = `${startMonth} 01 - ${startMonth} End, ${selectedYear}`;
+                const daysInMonth = new Date(selectedYear, selectedMonthIndex + 1, 0).getDate();
+                for (let d = 1; d <= daysInMonth; d++) datesToDisplay.push(new Date(selectedYear, selectedMonthIndex, d));
+            }
+
+            return datesToDisplay;
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const datesToDisplay = getActiveDates();
+
+            if (datesToDisplay.length > 0) {
+                const firstDayIndex = datesToDisplay[0].getDay();
+                for (let i = 0; i < firstDayIndex; i++) {
+                    const emptyCell = document.createElement('div');
+                    emptyCell.className = 'calendar-day bg-slate-50/50 border-r border-b border-slate-100';
+                    grid.appendChild(emptyCell);
+                }
+            }
+
+            datesToDisplay.forEach(dateObj => {
+                const dayNum = dateObj.getDate();
+                const isSun = dateObj.getDay() === 0;
+                const yearStr = dateObj.getFullYear();
+                const monthStr = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const dayStr = String(dayNum).padStart(2, '0');
+                const dateKey = `${yearStr}-${monthStr}-${dayStr}`;
+
+                const log = workLogs[dateKey] || { daily: 0, ot: 0 };
+
+                const cell = document.createElement('div');
+                cell.className = `calendar-day border-r border-b border-slate-200 p-1 flex flex-col items-center justify-between cursor-pointer transition hover:bg-orange-50 active:bg-orange-100 ${isSun ? 'bg-red-50/40' : 'bg-white'}`;
+                
+                cell.onclick = function() {
+                    openDayModal(dateKey);
+                };
+
+                let badgeHTML = '';
+                if (log.daily > 0 || log.ot > 0) {
+                    badgeHTML = `
+                        <div class="text-[9px] leading-tight font-bold text-center w-full">
+                            ${log.daily > 0 ? `<span class="text-blue-600 block">D:${log.daily}</span>` : ''}
+                            ${log.ot > 0 ? `<span class="text-orange-600 block">OT:${log.ot}</span>` : ''}
+                        </div>
+                    `;
+                }
+
+                cell.innerHTML = `
+                    <span class="text-xs font-bold ${isSun ? 'text-red-500' : 'text-slate-800'}">${dayNum}</span>
+                    ${badgeHTML}
+                `;
+                grid.appendChild(cell);
+            });
+        }
+
+        function calculateSalary() {
+            const dailyRate = parseFloat(document.getElementById('dailyRateInput').value) || 0;
+            const allowanceRate = parseFloat(document.getElementById('allowanceInput').value) || 0;
+            const otRate = parseFloat(document.getElementById('otRateInput').value) || 0;
+            const foodRate = parseFloat(document.getElementById('foodRateInput').value) || 0;
+
+            let totalDailyCount = 0;
+            let totalOTCount = 0;
+
+            const activeDates = getActiveDates();
+            activeDates.forEach(dateObj => {
+                const yearStr = dateObj.getFullYear();
+                const monthStr = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const dayStr = String(dateObj.getDate()).padStart(2, '0');
+                const k = `${yearStr}-${monthStr}-${dayStr}`;
+                
+                if (workLogs[k]) {
+                    totalDailyCount += parseFloat(workLogs[k].daily || 0);
+                    totalOTCount += parseFloat(workLogs[k].ot || 0);
+                }
+            });
+
+            document.getElementById('dailyDaysCount').innerText = totalDailyCount;
+            document.getElementById('otHoursCount').innerText = totalOTCount;
+            document.getElementById('workedDaysCount').innerText = totalDailyCount;
+
+            const dailyTotal = totalDailyCount * dailyRate;
+            const allowanceTotal = totalDailyCount * allowanceRate;
+            const otTotal = totalOTCount * otRate;
+
+            const subtotal = dailyTotal + allowanceTotal + otTotal;
+            const socialSec = subtotal * 0.04;
+            const foodTotal = totalDailyCount > 0 ? (totalDailyCount * foodRate) : 0;
+            
+            const netTotal = subtotal - socialSec - foodTotal;
+
+            document.getElementById('valDailySum').innerText = dailyTotal.toFixed(1);
+            document.getElementById('valAllowanceSum').innerText = allowanceTotal.toFixed(1);
+            document.getElementById('valOTSum').innerText = otTotal.toFixed(1);
+            document.getElementById('valSubtotal').innerText = subtotal.toFixed(1);
+            document.getElementById('valSocialSec').innerText = socialSec.toFixed(1);
+            document.getElementById('valFoodSum').innerText = foodTotal.toFixed(1);
+            document.getElementById('valTotalAmount').innerText = netTotal.toFixed(1);
+
+            return { totalDailyCount, totalOTCount, netTotal };
+        }
+
+        // Save Payslip Logic
+        function savePayslip() {
+            if (!userProfile.name) {
+                alert('လစာစလစ် မသိမ်းမီ ပရိုဖိုင် (အသုံးပြုသူနာမည်) အရင်ဖြည့်သွင်းပေးပါခင်ဗျာ။');
+                openProfileModal();
+                return;
+            }
+
+            const title = document.getElementById('monthDisplayTitle').innerText;
+            const { totalDailyCount, totalOTCount, netTotal } = calculateSalary();
+
+            const newSlip = {
+                id: Date.now(),
+                user: userProfile.name,
+                contact: userProfile.contact,
+                cycleTitle: title,
+                dailyDays: totalDailyCount,
+                otHours: totalOTCount,
+                netTotal: netTotal.toFixed(1),
+                savedAt: new Date().toLocaleDateString()
+            };
+
+            savedSlips.unshift(newSlip);
+            localStorage.setItem('workpay_slips', JSON.stringify(savedSlips));
+            renderSavedSlips();
+            alert(`[${title}] အတွက် လစာစလစ် သိမ်းဆည်းပြီးပါပြီ။`);
+        }
+
+        function renderSavedSlips() {
+            const container = document.getElementById('savedPayslipsList');
+            if (savedSlips.length === 0) {
+                container.innerHTML = `<p class="text-slate-400 text-[11px] text-center py-2">သိမ်းထားသော စလစ် မရှိသေးပါ။</p>`;
+                return;
+            }
+
+            container.innerHTML = savedSlips.map(slip => `
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5 flex justify-between items-center text-xs">
+                    <div>
+                        <div class="font-bold text-slate-800 text-[11px]">${slip.cycleTitle}</div>
+                        <div class="text-[10px] text-slate-500">အမည်: ${slip.user} (${slip.contact || 'No contact'})</div>
+                        <div class="text-[10px] text-slate-500">ဆင်းရက်: ${slip.dailyDays} ရက် | OT: ${slip.otHours} နာရီ</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-extrabold text-orange-600 text-sm">${slip.netTotal} BHD</div>
+                        <button onclick="deleteSlip(${slip.id})" class="text-[10px] text-red-500 hover:underline">ဖျက်မည်</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteSlip(id) {
+            if (confirm('ဒီလစာစလစ်ကို ဖျက်ရန် သေချာပါသလား။')) {
+                savedSlips = savedSlips.filter(s => s.id !== id);
+                localStorage.setItem('workpay_slips', JSON.stringify(savedSlips));
+                renderSavedSlips();
+            }
+        }
+
+        function openDayModal(dateKey) {
+            activeSelectedDateStr = dateKey;
+            document.getElementById('modalDateTitle').innerText = dateKey;
+            
+            const existing = workLogs[dateKey] || { daily: '', ot: '' };
+            document.getElementById('modalDailyHours').value = existing.daily || '';
+            document.getElementById('modalOTHours').value = existing.ot || '';
+
+            document.getElementById('dayModal').classList.remove('hidden');
+        }
+
+        function closeDayModal() {
+            document.getElementById('dayModal').classList.add('hidden');
+        }
+
+        function saveDayEntry() {
+            const dailyVal = parseFloat(document.getElementById('modalDailyHours').value) || 0;
+            const otVal = parseFloat(document.getElementById('modalOTHours').value) || 0;
+
+            if (dailyVal > 0 || otVal > 0) {
+                workLogs[activeSelectedDateStr] = { daily: dailyVal, ot: otVal };
+            } else {
+                delete workLogs[activeSelectedDateStr];
+            }
+
+            try {
+                localStorage.setItem('workpay_logs', JSON.stringify(workLogs));
+            } catch(e) {}
+
+            renderCalendar();
+            calculateSalary();
+            closeDayModal();
+        }
+    </script>
+</body>
+</html>
+
