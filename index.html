@@ -45,11 +45,15 @@
                 <h1 class="text-xl font-bold tracking-wide">WorkPay</h1>
             </div>
 
-            <!-- Profile & Login Badge -->
-            <div class="flex items-center space-x-2">
+            <!-- Profile & Share Action -->
+            <div class="flex items-center space-x-1.5">
+                <button onclick="shareApp()" class="bg-white/20 hover:bg-white/30 text-white text-[11px] font-semibold px-2 py-1 rounded-md border border-white/30 transition flex items-center gap-1">
+                    <i class="fa-solid fa-share-nodes text-[10px]"></i>
+                    <span>Share</span>
+                </button>
                 <button onclick="openProfileModal()" class="bg-white/20 hover:bg-white/30 text-white text-[11px] font-semibold px-2.5 py-1 rounded-md border border-white/30 transition flex items-center gap-1">
                     <i class="fa-solid fa-user-circle text-xs"></i>
-                    <span id="headerUserName">Login / Profile</span>
+                    <span id="headerUserName">Login</span>
                 </button>
             </div>
         </header>
@@ -181,12 +185,37 @@
                     <span>သိမ်းဆည်းထားသော လစာစလစ်များ</span>
                 </div>
                 <div id="savedPayslipsList" class="space-y-2">
-                    <!-- Saved slips list will appear here -->
                     <p class="text-slate-400 text-[11px] text-center py-2">သိမ်းထားသော စလစ် မရှိသေးပါ။</p>
                 </div>
             </div>
 
         </main>
+
+        <!-- Share Options Modal -->
+        <div id="shareModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-xl max-w-xs w-full p-4 shadow-2xl text-center space-y-3">
+                <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto text-lg">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-800">WorkPay App မျှဝေရန်</h3>
+                <p class="text-[11px] text-slate-500">အောက်ပါနည်းလမ်းများဖြင့် မျှဝေနိုင်ပါသည်</p>
+
+                <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                    <button onclick="shareToWhatsApp()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition">
+                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                        <span>WhatsApp</span>
+                    </button>
+                    <button onclick="copyAppMessage()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition">
+                        <i class="fa-regular fa-copy text-sm"></i>
+                        <span>Copy Text</span>
+                    </button>
+                </div>
+
+                <button onclick="closeShareModal()" class="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-lg text-xs mt-2 transition">
+                    ပိတ်မည်
+                </button>
+            </div>
+        </div>
 
         <!-- User Profile & Login Modal -->
         <div id="profileModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -258,7 +287,7 @@
     <!-- Script Logic -->
     <script>
         let selectedYear = 2026;
-        let selectedMonthIndex = 6; // 0 = Jan, 6 = Jul
+        let selectedMonthIndex = 6; 
         let cycleMode = '26-next-end'; 
         let workLogs = {};
         let savedSlips = [];
@@ -279,6 +308,40 @@
             calculateSalary();
             renderSavedSlips();
         });
+
+        // Share Handlers for APK & Web
+        const shareTextContent = "WorkPay App - အလုပ်ချိန်နှင့် လစာတွက်ချက်ပေးသော ဆော့ဖ်ဝဲလ်";
+
+        function shareApp() {
+            if (navigator.share && window.location.protocol.startsWith('http')) {
+                navigator.share({
+                    title: 'WorkPay',
+                    text: shareTextContent,
+                    url: window.location.href,
+                }).catch(() => {});
+            } else {
+                document.getElementById('shareModal').classList.remove('hidden');
+            }
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.add('hidden');
+        }
+
+        function shareToWhatsApp() {
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareTextContent)}`;
+            window.open(url, '_blank');
+            closeShareModal();
+        }
+
+        function copyAppMessage() {
+            navigator.clipboard.writeText(shareTextContent).then(() => {
+                alert('စာသားကို စက်ထဲ Copy ကူးယူပြီးပါပြီ။');
+                closeShareModal();
+            }).catch(() => {
+                alert(shareTextContent);
+            });
+        }
 
         // User Profile Functions
         function openProfileModal() {
@@ -311,7 +374,7 @@
             if (userProfile.name) {
                 btnLabel.innerText = userProfile.name;
             } else {
-                btnLabel.innerText = 'Login / Profile';
+                btnLabel.innerText = 'Login';
             }
         }
 
